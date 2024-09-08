@@ -1,17 +1,19 @@
-from pydantic import BaseModel, HttpUrl, Field, computed_field
+from pydantic import BaseModel, HttpUrl, Field, computed_field, AliasChoices
 from typing import List, Optional
 import re
 
 
 class Brand(BaseModel):
-    type: str = Field(alias="@type")
+    type: str = Field(validation_alias=AliasChoices("type", "@type"))
     name: str
 
 
 class Offer(BaseModel):
-    type: str = Field(alias="@type")
+    type: str = Field(validation_alias=AliasChoices("type", "@type"))
     price: float
-    price_currency: str = Field(alias="priceCurrency")
+    price_currency: str = Field(
+        validation_alias=AliasChoices("price_currency", "priceCurrency")
+    )
 
 
 class Vinmonopolprodukt(BaseModel):
@@ -24,8 +26,11 @@ class Vinmonopolprodukt(BaseModel):
     keywords: List[str] = []
     size: str
     abv: float
-    country_of_origin: str = Field(alias="countryOfOrigin")
+    country_of_origin: str = Field(
+        validation_alias=AliasChoices("country_of_origin", "countryOfOrigin")
+    )
     color: Optional[str] = None
+    product_id: str
 
     def _parse_size(self) -> float:
         """Parse the size string and return volume in liters."""

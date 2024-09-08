@@ -33,4 +33,4 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
 
     product_data = json.loads(json_ld_script.string)
 
-    return Vinmonopolprodukt(**product_data, abv=alkoholprosent)
+    return Vinmonopolprodukt(**product_data, abv=alkoholprosent, product_id=product_id)
