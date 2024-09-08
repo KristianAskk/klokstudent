@@ -26,11 +26,11 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
         r'<strong>Alkohol</strong> <span aria-label="(\d+(?:,\d+)?) prosent">',
         response.text,
     )
+
     alkoholprosent = (
         float(alcohol_match.group(1).replace(",", ".")) if alcohol_match else 0.0
     )
 
     product_data = json.loads(json_ld_script.string)
 
-    product = Vinmonopolprodukt(**product_data, abv=alkoholprosent)
-    print(product)
+    return Vinmonopolprodukt(**product_data, abv=alkoholprosent)

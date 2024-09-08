@@ -25,16 +25,18 @@ class Vinmonopolprodukt(BaseModel):
     size: str
     abv: float
     country_of_origin: str = Field(alias="countryOfOrigin")
-    color: str
+    color: Optional[str] = None
 
     def _parse_size(self) -> float:
         """Parse the size string and return volume in liters."""
-        match = re.match(r"(\d+(?:\.\d+)?)\s*(cl|ml|l)", self.size.lower())
+        match = re.fullmatch(r"(\d+(?:[.,]\d+)?)\s*(cl|ml|l)", self.size.lower())
         if not match:
-            raise ValueError(f"Unable to parse size: {self.size}")
+            raise ValueError(
+                f"Unable to parse size '{self.size}'. Expected format: '<amount> <unit>' where unit is one of 'cl', 'ml', 'l'."
+            )
 
         amount, unit = match.groups()
-        amount = float(amount)
+        amount = float(amount.replace(",", "."))
 
         if unit == "cl":
             return amount / 100
