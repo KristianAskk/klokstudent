@@ -26,6 +26,7 @@ class Vinmonopolprodukt(BaseModel):
     keywords: List[str] = []
     size: str
     abv: float
+    expired: Optional[bool] = False
     country_of_origin: Optional[str] = Field(
         validation_alias=AliasChoices("country_of_origin", "countryOfOrigin")
     )

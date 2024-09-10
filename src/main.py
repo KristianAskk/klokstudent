@@ -82,6 +82,7 @@ def process_products_multithreaded(restart=True, workers=1) -> None:
     elapsed_time = end_time - start_time
     logger.info(f"Time taken: {elapsed_time:.2f} seconds")
 
+
 def process_products(restart=True) -> None:
     """Errors are actually shown when it's single-threaded"""
     product_ids = load_products()

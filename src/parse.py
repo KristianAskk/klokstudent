@@ -28,6 +28,8 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
     if product_data.get("brand") is None:
         return None
 
+    expired = True if soup.find("div", class_="product-price-expired") else False
+
     alcohol_match = re.search(
         r'<strong>Alkohol</strong> <span aria-label="(\d+(?:,\d+)?) prosent">',
         response.text,
@@ -37,4 +39,6 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
         float(alcohol_match.group(1).replace(",", ".")) if alcohol_match else 0.0
     )
 
-    return Vinmonopolprodukt(**product_data, abv=alkoholprosent, product_id=product_id)
+    return Vinmonopolprodukt(
+        **product_data, abv=alkoholprosent, product_id=product_id, expired=expired
+    )
