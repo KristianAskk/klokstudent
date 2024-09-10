@@ -8,7 +8,7 @@ from typing import Optional
 import requests
 
 from config import HEADERS, PRODUCT_PAGE_URL
-from Vinmonopolprodukt import Vinmonopolprodukt
+from vinmonopolet import Vinmonopolprodukt
 
 
 def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
@@ -19,7 +19,13 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
     # find the value within the tag <script type="application/ld+json">
     json_ld_script = soup.find("script", type="application/ld+json")
 
+    product_data = json.loads(json_ld_script.string)
+    print(product_data)
+
     if json_ld_script is None:
+        return None
+
+    if product_data.get("brand") is None:
         return None
 
     alcohol_match = re.search(
@@ -30,7 +36,5 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
     alkoholprosent = (
         float(alcohol_match.group(1).replace(",", ".")) if alcohol_match else 0.0
     )
-
-    product_data = json.loads(json_ld_script.string)
 
     return Vinmonopolprodukt(**product_data, abv=alkoholprosent, product_id=product_id)

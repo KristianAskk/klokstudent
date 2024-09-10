@@ -26,7 +26,7 @@ class Vinmonopolprodukt(BaseModel):
     keywords: List[str] = []
     size: str
     abv: float
-    country_of_origin: str = Field(
+    country_of_origin: Optional[str] = Field(
         validation_alias=AliasChoices("country_of_origin", "countryOfOrigin")
     )
     color: Optional[str] = None

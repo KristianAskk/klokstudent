@@ -1,18 +1,17 @@
 import requests
 import json
 from typing import Optional, List
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import logging
-from tqdm import tqdm
 
 from parse import parse_product_site
 from config import HEADERS
-from Vinmonopolprodukt import Vinmonopolprodukt
+from vinmonopolet import Vinmonopolprodukt
 
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
-# no logging whatsoever
-logger.setLevel(logging.CRITICAL)
 
 
 def load_products(exclude_non_drinks=True) -> List[str]:
@@ -33,7 +32,7 @@ def process_single_product(product_id: str) -> Optional[Vinmonopolprodukt]:
     return product
 
 
-def process_products(restart=True, workers=1) -> None:
+def process_products(restart=True) -> None:
     product_ids = load_products()
     products: List[Vinmonopolprodukt] = []
     total_products = len(product_ids)
@@ -46,41 +45,33 @@ def process_products(restart=True, workers=1) -> None:
             continuation_index = product_ids.index(products[-1].product_id)
             product_ids = product_ids[continuation_index + 1 :]
 
-    def process_and_save(product_id: str) -> Optional[Vinmonopolprodukt]:
+    for index, product_id in enumerate(product_ids):
         product = process_single_product(product_id)
+        print(product)
         if product:
-            logger.info(f"Processed product: {product.name}")
-        return product
+            logger.info(
+                f"Processed product {index + 1}/{total_products}: {product.name}"
+            )
+            products.append(product)
 
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = [
-            executor.submit(process_and_save, product_id) for product_id in product_ids
-        ]
-
-        for future in tqdm(
-            as_completed(futures), total=len(product_ids), desc="Processing products"
-        ):
-            product = future.result()
-            if product:
-                products.append(product)
-
-                with open("vinmonopol_products.json", "w", encoding="utf-8") as f:
-                    try:
-                        json.dump(
-                            [json.loads(p.model_dump_json()) for p in products],
-                            f,
-                            ensure_ascii=False,
-                            indent=2,
-                        )
-                    except Exception as e:
-                        logger.error(f"Failed to write to file: {e}")
-                        time.sleep(10)
-                        print(products[-1].model_dump_json())
+            with open("vinmonopol_products.json", "w", encoding="utf-8") as f:
+                try:
+                    json.dump(
+                        [json.loads(p.model_dump_json()) for p in products],
+                        f,
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to write to file: {e}")
+                    time.sleep(10)
+                    print(products[-1].model_dump_json())
 
     end_time = time.time()
     elapsed_time = end_time - start_time
-    logger.info(f"Time taken: {elapsed_time:.2f} seconds")
+    logger.info(f"Processing completed. Time taken: {elapsed_time:.2f} seconds")
+    logger.info(f"Total products processed: {len(products)}/{total_products}")
 
 
 if __name__ == "__main__":
-    process_products(restart=True, workers=4)
+    process_products(restart=False)
