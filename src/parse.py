@@ -19,15 +19,15 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
     # find the value within the tag <script type="application/ld+json">
     json_ld_script = soup.find("script", type="application/ld+json")
 
-    product_data = json.loads(json_ld_script.string)
-    print(product_data)
-
     if json_ld_script is None:
         return None
+
+    product_data = json.loads(json_ld_script.string)
 
     if product_data.get("brand") is None:
         return None
 
+    print(product_data)
     expired = True if soup.find("div", class_="product-price-expired") else False
 
     alcohol_match = re.search(
