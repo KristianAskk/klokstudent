@@ -16,7 +16,6 @@ def parse_product_site(product_id: str) -> Optional[Vinmonopolprodukt]:
     response = requests.get(url, headers=HEADERS)
 
     soup = bs4.BeautifulSoup(response.text, "html.parser")
-    # find the value within the tag <script type="application/ld+json">
     json_ld_script = soup.find("script", type="application/ld+json")
 
     if json_ld_script is None:
