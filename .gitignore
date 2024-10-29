@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -231,4 +230,3 @@ cython_debug/
 *package-lock.json
 *.eslintcache
 **v8.log
-*/lib/
