@@ -5,7 +5,8 @@ import * as path from 'path';
 import { DateTime } from 'luxon';
 import cron from 'node-cron';
 import { GLOESHAUGEN_LOCATION, PRODUCTS, DATABASE_NAME, DATABASE_URL, TIMEZONE } from './config'; 
-import { Store, VinmonopolProduct } from './models';
+import { Store, VinmonopolProduct, Feed } from './models';
+import { createTypeReferenceDirectiveResolutionCache } from 'typescript';
 
 
 
@@ -66,7 +67,7 @@ function createUrl(productId: string, longitude: number, latitude: number): stri
 
 async function fetchStoreData(productId: string): Promise<StoreResponse[]> {
   const url = createUrl(productId, GLOESHAUGEN_LOCATION.longitude, GLOESHAUGEN_LOCATION.latitude);
-  console.log(`Fetching ${url}`);
+  //console.log(`Fetching ${url}`);
   const response = await axios.get<StoreFinderStockSearchPageResponse>(url);
   return response.data.stores;
 }
@@ -119,6 +120,14 @@ async function updateStockInfo(storeObject: InstanceType<typeof Store>, store: S
     });
     await storeObject.save();
     console.log(`Updated stock for ${product.name} in ${storeObject.addressFormattedAddress}: ${currentStock}`);
+    const feed = new Feed({
+      productId: product._id,
+      oldStock: lastStock?.level ?? 0,
+      newStock: currentStock,
+      storeId: storeObject._id
+    });
+    await feed.save();
+    console.log(`Feed for ${product.name} in ${storeObject.addressFormattedAddress} has been created`);
   }
 }
 
@@ -158,7 +167,7 @@ async function runDataFetch(): Promise<void> {
 function mainLoop(): void {
   console.log('Entering main loop...');
 
-  cron.schedule('*/10 * * * * *', () => {
+  cron.schedule('*/15 * * * * *', () => {
     const now = DateTime.now().setZone(TIMEZONE);
     if (isWithinOperatingHours()) {
       console.log('Running data fetch at', now.toLocaleString(DateTime.DATETIME_FULL));

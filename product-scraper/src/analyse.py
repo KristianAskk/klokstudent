@@ -7,14 +7,14 @@ import plotly.graph_objects as go
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
-from vinmonopolet import Vinmonopolprodukt
+from vinmonopolet import VinmonopolProduct
 from systembolaget import Systembolagetprodukt
 
 
 def load_data() -> Dict[str, List[Any]]:
     with open("vinmonopol_products.json", "r", encoding="utf-8") as f:
-        vinmonopol_products: List[Vinmonopolprodukt] = [
-            Vinmonopolprodukt(**p) for p in json.load(f)
+        vinmonopol_products: List[VinmonopolProduct] = [
+            VinmonopolProduct(**p) for p in json.load(f)
         ]
     print(f"Loaded {len(vinmonopol_products)} products from Vinmonopolet")
     vinmonopol_products = [p for p in vinmonopol_products if not p.expired]
@@ -39,7 +39,7 @@ def load_data() -> Dict[str, List[Any]]:
             for p in systembolaget_products
             if p.alcohol_per_sek is not None
         ],
-        "alcohol_percentage": [p.abv for p in vinmonopol_products]
+        "alcohol_percentage": [p.alcohol_per_nok for p in vinmonopol_products]
         + [
             p.alcohol_percentage
             for p in systembolaget_products
